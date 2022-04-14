@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
-    "babel-plugin-dynamic-import-node": "^2.3.3",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-stage-0": "^6.24.1",
     "jest": "^27.5.1",
     "puppeteer": "^13.5.2"
   },
