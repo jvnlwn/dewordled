@@ -1,5 +1,6 @@
-// Order matters! As long as "correct" preceeds "present", we're good.
-const evaluationTypes = ["correct", "present", "absent"]
+// Order matters (only when assing the max "present")!
+// As long as "present" precedes "correct", we're good.
+const evaluationTypes = ["absent", "present", "correct"]
 
 // Wraps a letterTotals obj that keeps track of the total occurrences of a letter
 // for a given evaluation type. Returns a function that acts as both a setter and getter.
@@ -69,37 +70,38 @@ const mergeEvaluations = (wordEvaluations) => {
   wordEvaluations.forEach((wordEvaluation) => {
     const currentLetterTotals = createLetterTotals()
 
-    // For each letter evaluation in the word evaluation...
-    wordEvaluation.forEach((letterEvaluation, i) => {
+    const addLetterEvaluation = (letterEvaluation, index) => {
       // Avoid exact duplicates in same column.
-      if (!getLetterEvaluationExists(mergedEvaluations[i], letterEvaluation)) {
+      if (
+        !getLetterEvaluationExists(mergedEvaluations[index], letterEvaluation)
+      ) {
         // Inserting current letterEvaluation.
-        mergedEvaluations[i] = mergedEvaluations[i]
-          ? [...mergedEvaluations[i], letterEvaluation]
+        mergedEvaluations[index] = mergedEvaluations[index]
+          ? [...mergedEvaluations[index], letterEvaluation]
           : [letterEvaluation]
-
-        // Auto-adding an "absent" letter evaluation for any "present" letter evaluation.
-        if (letterEvaluation.evaluation === "present") {
-          mergedEvaluations[i].push({
-            letter: letterEvaluation.letter,
-            evaluation: "absent"
-          })
-
-          // Increment total for letter/"absent" evaluation.
-          currentLetterTotals(
-            letterEvaluation.letter,
-            "absent",
-            (total) => total + 1
-          )
-        }
       }
 
-      // Increment total for letter/evaluation.
+      // Increment total for letterEvaluation.
       currentLetterTotals(
         letterEvaluation.letter,
         letterEvaluation.evaluation,
         (total) => total + 1
       )
+    }
+
+    // For each letter evaluation in the word evaluation...
+    wordEvaluation.forEach((letterEvaluation, i) => {
+      addLetterEvaluation(letterEvaluation, i)
+
+      // Auto-adding an "absent" letter evaluation for any "present" letter evaluation.
+      if (letterEvaluation.evaluation === "present") {
+        const absentLetterEvaluation = {
+          letter: letterEvaluation.letter,
+          evaluation: "absent"
+        }
+
+        addLetterEvaluation(absentLetterEvaluation, i)
+      }
     })
 
     // Get a complete list of all letters currently being assessed.
@@ -108,46 +110,57 @@ const mergeEvaluations = (wordEvaluations) => {
       ...Object.keys(currentLetterTotals._totals)
     ])
 
+    console.log(
+      wordEvaluation.map((le) => le.letter),
+      currentLetterTotals._totals
+    )
+
     // For each letter being assessed, get the maximum total for the letter/evaluation.
     letters.forEach((letter) => {
       evaluationTypes.forEach((eType) => {
-        // Get total of "present" and "correct" evaluations,
-        // favoring in a tie the one that has most "correct"
+        let maxTotal = 0
 
-        // Only proceed to update "present" totals if the "correct" totals
-        // at least meet the current max total. If so, we
+        // Deriving the "present" maxTotal is unique in that the process requires
+        // factoring in the max "correct" letter evaluations for the word.
         if (eType === "present") {
-          // Assuming that if currentLetterTotals "correct" IS equal to the
-          // maxLetterTotals "correct", then the currentLetterTotals is responsible
-          // for the latest update.
-          if (
-            currentLetterTotals(letter, "correct") !==
+          // Get total of "present" and "correct" evaluations
+          // for the current totals.
+          const currentPossible =
+            currentLetterTotals(letter, "present") +
+            currentLetterTotals(letter, "correct")
+
+          // Get total of "present" and "correct" evaluations
+          // for the max totals.
+          const maxPossible =
+            maxLetterTotals(letter, "present") +
             maxLetterTotals(letter, "correct")
-          ) {
-            // Early return...
-            return
-          }
-          // Get maxTotal.
-          const maxTotal = Math.max(
-            currentLetterTotals(letter, eType),
-            // Augment the current max for "present" letter evaluations by the
-            // current max for "correct" letter evaluations to ensure that the
-            // max "preset" letter evaluations is capped.
-            maxLetterTotals(letter, eType) - maxLetterTotals(letter, "correct")
+
+          // Finding the max of currentPossible and maxPossible
+          // will give us the minumum number of occurrences of the
+          // current letter that we can expect in the wordle.
+          const minExpected = Math.max(currentPossible, maxPossible)
+
+          // Of the minExpected, we can expect a maxCorrect to be at most
+          // equal to minExpected.
+          const maxCorrect = Math.max(
+            currentLetterTotals(letter, "correct"),
+            maxLetterTotals(letter, "correct")
           )
 
-          // Update with maxTotal.
-          maxLetterTotals(letter, eType, maxTotal)
+          // The difference of minExpected and maxCorrect gives us the
+          // maxTotal which, in this case, is the maximum number of "present"
+          // letter evaluations currently possible in the wordle.
+          maxTotal = minExpected - maxCorrect
         } else {
           // Get maxTotal.
-          const maxTotal = Math.max(
+          maxTotal = Math.max(
             currentLetterTotals(letter, eType),
             maxLetterTotals(letter, eType)
           )
-
-          // Update with maxTotal.
-          maxLetterTotals(letter, eType, maxTotal)
         }
+
+        // Update with maxTotal.
+        maxLetterTotals(letter, eType, maxTotal)
       })
     })
   })
@@ -185,6 +198,8 @@ const mergeEvaluations = (wordEvaluations) => {
       return letterEvaluations
     })
   })
+
+  console.log("maxLetterTotals", maxLetterTotals._totals)
 
   // Spread the "absent" letter evaluations.
   letters.forEach((letter) => {

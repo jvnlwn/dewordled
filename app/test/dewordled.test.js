@@ -42,8 +42,8 @@ const wordles = {
         {
           mergedEvaluations: [
             [
-              { letter: "a", evaluation: "present" },
               { letter: "a", evaluation: "absent" },
+              { letter: "a", evaluation: "present" },
               { letter: "i", evaluation: "absent" },
               { letter: "p", evaluation: "absent" }
             ],
@@ -239,8 +239,6 @@ const wordles = {
               { letter: "p", evaluation: "absent" },
               { letter: "r", evaluation: "absent" },
               { letter: "r", evaluation: "present" }
-              // FIX: mergedEvaluations incorrectly including:
-              // { letter: "s", evaluation: "absent" }
             ],
             [
               { letter: "a", evaluation: "absent" },
@@ -250,8 +248,6 @@ const wordles = {
               { letter: "i", evaluation: "absent" },
               { letter: "p", evaluation: "absent" },
               { letter: "r", evaluation: "absent" }
-              // FIX: mergedEvaluations incorrectly(?) including:
-              // { letter: "s", evaluation: "absent" }
             ],
             [
               { letter: "a", evaluation: "correct" },
@@ -261,9 +257,6 @@ const wordles = {
               { letter: "i", evaluation: "absent" },
               { letter: "p", evaluation: "absent" },
               { letter: "s", evaluation: "absent" },
-              // FIX: mergedEvaluations incorrectly missing:
-              // { letter: "s", evaluation: "present" }
-              // Coming from the first "s" in "apsis".
               { letter: "s", evaluation: "present" }
             ],
             [
