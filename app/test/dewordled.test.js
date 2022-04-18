@@ -1,8 +1,6 @@
 const mergeEvaluations = require("../src/mergeEvaluations")
-
-// TODO: maybe just exclude all "absent" letter evaluations for
-// an index in which a "correct" letter evaluation exists.
-// This is not necessry, but would simplify things.
+const testEvaluations = require("../src/testEvaluations")
+const words = require("../src/words.json")
 
 const wordles = {
   sears: {
@@ -70,7 +68,113 @@ const wordles = {
             ],
             [{ letter: "s", type: "correct" }]
           ],
-          patterns: []
+          words: [
+            "brass",
+            "class",
+            "crass",
+            "eyass",
+            "frass",
+            "gauss",
+            "glass",
+            "grass",
+            "ksars",
+            "kvass",
+            "quass",
+            "saags",
+            "sabes",
+            "sacks",
+            "sades",
+            "sados",
+            "safes",
+            "sagas",
+            "sages",
+            "sagos",
+            "sakes",
+            "sales",
+            "salts",
+            "samas",
+            "sames",
+            "sands",
+            "sanes",
+            "sangs",
+            "sants",
+            "sards",
+            "sarks",
+            "saros",
+            "sarus",
+            "sates",
+            "sauls",
+            "sauts",
+            "saves",
+            "saxes",
+            "sazes",
+            "scabs",
+            "scads",
+            "scags",
+            "scams",
+            "scans",
+            "scars",
+            "scats",
+            "scaws",
+            "seals",
+            "seams",
+            "seans",
+            "sears",
+            "seats",
+            "senas",
+            "shads",
+            "shags",
+            "shahs",
+            "shams",
+            "shans",
+            "shaws",
+            "shays",
+            "sheas",
+            "shwas",
+            "skags",
+            "skats",
+            "skaws",
+            "skuas",
+            "slabs",
+            "slaes",
+            "slags",
+            "slams",
+            "slats",
+            "slaws",
+            "slays",
+            "snabs",
+            "snags",
+            "snars",
+            "snaws",
+            "soaks",
+            "soars",
+            "sobas",
+            "socas",
+            "sodas",
+            "sofas",
+            "sojas",
+            "solas",
+            "somas",
+            "soras",
+            "soyas",
+            "stabs",
+            "stags",
+            "stars",
+            "stats",
+            "staws",
+            "stays",
+            "stoas",
+            "subas",
+            "suras",
+            "swabs",
+            "swads",
+            "swags",
+            "swans",
+            "swats",
+            "sways",
+            "trass",
+            "tsars"
+          ]
         }
       ],
       [
@@ -99,7 +203,113 @@ const wordles = {
             ],
             [{ letter: "s", type: "correct" }]
           ],
-          patterns: []
+          words: [
+            "brass",
+            "class",
+            "crass",
+            "eyass",
+            "frass",
+            "gauss",
+            "glass",
+            "grass",
+            "ksars",
+            "kvass",
+            "quass",
+            "saags",
+            "sabes",
+            "sacks",
+            "sades",
+            "sados",
+            "safes",
+            "sagas",
+            "sages",
+            "sagos",
+            "sakes",
+            "sales",
+            "salts",
+            "samas",
+            "sames",
+            "sands",
+            "sanes",
+            "sangs",
+            "sants",
+            "sards",
+            "sarks",
+            "saros",
+            "sarus",
+            "sates",
+            "sauls",
+            "sauts",
+            "saves",
+            "saxes",
+            "sazes",
+            "scabs",
+            "scads",
+            "scags",
+            "scams",
+            "scans",
+            "scars",
+            "scats",
+            "scaws",
+            "seals",
+            "seams",
+            "seans",
+            "sears",
+            "seats",
+            "senas",
+            "shads",
+            "shags",
+            "shahs",
+            "shams",
+            "shans",
+            "shaws",
+            "shays",
+            "sheas",
+            "shwas",
+            "skags",
+            "skats",
+            "skaws",
+            "skuas",
+            "slabs",
+            "slaes",
+            "slags",
+            "slams",
+            "slats",
+            "slaws",
+            "slays",
+            "snabs",
+            "snags",
+            "snars",
+            "snaws",
+            "soaks",
+            "soars",
+            "sobas",
+            "socas",
+            "sodas",
+            "sofas",
+            "sojas",
+            "solas",
+            "somas",
+            "soras",
+            "soyas",
+            "stabs",
+            "stags",
+            "stars",
+            "stats",
+            "staws",
+            "stays",
+            "stoas",
+            "subas",
+            "suras",
+            "swabs",
+            "swads",
+            "swags",
+            "swans",
+            "swats",
+            "sways",
+            "trass",
+            "tsars"
+          ]
         }
       ],
       [
@@ -128,7 +338,90 @@ const wordles = {
               { letter: "e", type: "absent" }
             ]
           ],
-          patterns: []
+          words: [
+            "claes",
+            "deads",
+            "deals",
+            "deans",
+            "dears",
+            "deaws",
+            "ecads",
+            "egads",
+            "elans",
+            "emacs",
+            "etats",
+            "exams",
+            "feals",
+            "fears",
+            "feats",
+            "geals",
+            "geans",
+            "gears",
+            "geats",
+            "heads",
+            "heals",
+            "heaps",
+            "hears",
+            "heats",
+            "jeans",
+            "jeats",
+            "leads",
+            "leafs",
+            "leaks",
+            "leams",
+            "leans",
+            "leaps",
+            "lears",
+            "leats",
+            "meads",
+            "meals",
+            "means",
+            "meats",
+            "neals",
+            "neaps",
+            "nears",
+            "neats",
+            "peags",
+            "peaks",
+            "peals",
+            "peans",
+            "pears",
+            "peats",
+            "reads",
+            "reais",
+            "reaks",
+            "reals",
+            "reams",
+            "reans",
+            "reaps",
+            "rears",
+            "seals",
+            "seams",
+            "seamy",
+            "seans",
+            "sears",
+            "seats",
+            "slaes",
+            "spaed",
+            "spaer",
+            "spaes",
+            "teads",
+            "teaks",
+            "teals",
+            "teams",
+            "tears",
+            "teats",
+            "twaes",
+            "veals",
+            "weals",
+            "weans",
+            "wears",
+            "yeads",
+            "yeahs",
+            "yeans",
+            "years",
+            "zeals"
+          ]
         }
       ],
       [
@@ -163,7 +456,7 @@ const wordles = {
               { letter: "s", type: "correct" }
             ]
           ],
-          patterns: []
+          words: ["seals", "seams", "seans", "sears", "seats", "slaes"]
         }
       ],
       [
@@ -199,7 +492,7 @@ const wordles = {
             ],
             [{ letter: "s", type: "correct" }]
           ],
-          patterns: []
+          words: ["sears"]
         }
       ],
       [
@@ -232,7 +525,7 @@ const wordles = {
             ],
             [{ letter: "s", type: "correct" }]
           ],
-          patterns: []
+          words: ["sears"]
         }
       ],
       [
@@ -245,14 +538,12 @@ const wordles = {
             [{ letter: "r", type: "correct" }],
             [{ letter: "s", type: "correct" }]
           ],
-          patterns: []
+          words: ["sears"]
         }
       ]
     ])
   }
 }
-
-// /^([^api])([^pi])([^spi])([^pi])([s])$/.test(word) && /([s].*?){2,}/.test(word)
 
 // For ensuring expect.toEqual compares Array elements in same position.
 const sortMergedEvaluation = (mergedEvaluations) =>
@@ -270,39 +561,42 @@ const sortMergedEvaluation = (mergedEvaluations) =>
 describe.each(Object.entries(wordles))(
   "wordle: %p",
   (word, { evaluations, expects }) => {
-    describe.each([...expects])(
-      "merged evaluations for guesses: %p",
-      (guesses, expects) => {
-        // Ensure guesses is an array as it may be a string.
-        guesses = [].concat(guesses)
-        // Get all evaluations for each guess.
-        const allEvaluations = guesses.map((guess) => {
-          const guessEvaluations = evaluations[guess]
-          if (!guessEvaluations) {
-            throw Error(`No guess evaluations found for "${guess}".`)
-          }
-          return guessEvaluations
-        })
-        // Merge and sort all evaluations.
-        const mergedEvaluations = sortMergedEvaluation(
-          mergeEvaluations(allEvaluations)
-        )
-        // Sort expected merged evaluations.
-        const expectedMergedEvaluations = sortMergedEvaluation(
-          expects.mergedEvaluations
-        )
-        // Helpful to look at full mergedEvaluations output.
-        console.log(guesses, mergedEvaluations)
+    describe.each([...expects])("guesses: %p", (guesses, expects) => {
+      // Ensure guesses is an array as it may be a string.
+      guesses = [].concat(guesses)
+      // Get all evaluations for each guess.
+      const allEvaluations = guesses.map((guess) => {
+        const guessEvaluations = evaluations[guess]
+        if (!guessEvaluations) {
+          throw Error(`No guess evaluations found for "${guess}".`)
+        }
+        return guessEvaluations
+      })
+      // Merge and sort all evaluations.
+      const mergedEvaluations = sortMergedEvaluation(
+        mergeEvaluations(allEvaluations)
+      )
+      // Sort expected merged evaluations.
+      const expectedMergedEvaluations = sortMergedEvaluation(
+        expects.mergedEvaluations
+      )
+      // Helpful to look at full mergedEvaluations output.
+      console.log(guesses, mergedEvaluations)
 
-        // Break isEqual check out, checking mergedEvaluations at each
-        // letter index, for easier debugging.
-        mergedEvaluations.forEach((mergedEvaluation, i) => {
-          test(`for letter index [${i}]`, () => {
-            // Expected the sorted evaluations to equal.
-            expect(mergedEvaluation).toEqual(expectedMergedEvaluations[i])
-          })
+      // Break isEqual check out, checking mergedEvaluations at each
+      // letter index, for easier debugging.
+      mergedEvaluations.forEach((mergedEvaluation, i) => {
+        test(`merged evaluations for letter index [${i}]`, () => {
+          // Expected the sorted evaluations to equal.
+          expect(mergedEvaluation).toEqual(expectedMergedEvaluations[i])
         })
-      }
-    )
+      })
+
+      test(`remaining words`, () => {
+        // Test that the expected words remain from the words list after testing
+        // them against the regex patterns derived from the merged evaluations.
+        expect(testEvaluations(mergedEvaluations, words)).toEqual(expects.words)
+      })
+    })
   }
 )
