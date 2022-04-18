@@ -24,7 +24,7 @@ const getEvaluationExists = (evaluations, evaluation) => {
 // 3. Merge all "correct" evaluations.
 const mergeEvaluations = (guesses) => {
   // Infer total expected letters from first guess.
-  const totalEvaluationsPerWord = guesses[0].length
+  const totalEvaluationsPerWord = guesses[0] ? guesses[0].length : 0
   let mergedEvaluations = new Array(totalEvaluationsPerWord).fill([])
   const maxEvaluationTotals = createEvaluationTotals()
 

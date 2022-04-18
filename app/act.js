@@ -1,12 +1,7 @@
 const puppeteer = require("puppeteer")
-
-// const getGameNode = document => document.querySelector("game-app").shadowRoot.querySelector("game-theme-manager")
-
-// const evaluateArgs = {getGameNode}
-
-// const evaluateFn = (fn, ...options)=> ([
-//   fn, evaluateArgs, ...options
-// ])
+const mergeEvaluations = require("./src/mergeEvaluations")
+const testEvaluations = require("./src/testEvaluations")
+const words = require("./src/words.json")
 
 const act = async () => {
   const browser = await puppeteer.launch()
@@ -24,60 +19,70 @@ const act = async () => {
   //   localStorage.setItem("nyt-wordle-darkmode", true)
   // })
 
-  // const gameNode = await page.evaluate((options)=>
-  //   document.querySelector("game-app").shadowRoot.querySelector("game-theme-manager")
-  // ))
+  // Close out the game modal. This may be doable via setting localStorage?
+  const closeButton = await page.$("pierce/.close-icon")
+  closeButton.click()
 
-  await page.evaluate((options) => {
-    document
-      .querySelector("game-app")
-      .shadowRoot.querySelector("game-theme-manager")
-      .querySelector("game-modal")
-      .shadowRoot.querySelector(".close-icon")
-      .click()
-  })
+  let isGameOver = false
+  let guesses = []
+  const allEvaluations = []
+  const getIsGameOver = () => {
+    const hasLost = guesses.length >= 6
+    const hasWon =
+      !!allEvaluations.length &&
+      allEvaluations[allEvaluations.length - 1].every(
+        (evaluation) => evaluation.type === "correct"
+      )
+    return hasLost || hasWon
+  }
 
-  let row = 0
-  let evaluations = []
-  while (row < 2) {
-    const evaluation = await page.evaluate((row) => {
-      // Select all game rows.
-      // gameNode.querySelectorAll("game-row")
+  while (!isGameOver) {
+    // Get the currently possible words based on all evaluations
+    // accrued thus far.
+    const possibleWords = testEvaluations(
+      mergeEvaluations(allEvaluations),
+      words
+    )
+    const guessIndex = Math.floor(Math.random() * possibleWords.length)
+    const guess = possibleWords[guessIndex]
+    // NOTE: "↵" is the enter key used to submit the guess.
+    const letters = [...guess, "↵"]
 
-      const word = "tears↵"
-      const letters = [...word]
+    for (let i = 0; i < letters.length; i++) {
+      const letter = letters[i]
+      const button = await page.$(`pierce/button[data-key="${letter}"]`)
+      // Seems the click event will only register if we wait between clicking each button.
+      // Running the clicks in a loop within a page.evaluate does not have this issue.
+      await page.waitForTimeout(300)
+      button.click()
+      console.log(`ACTION: clicking letter key ${letter}`)
+    }
 
-      letters.forEach((letter) => {
-        document
-          .querySelector("game-app")
-          .shadowRoot.querySelector("game-theme-manager")
-          .querySelector("game-keyboard")
-          .shadowRoot.querySelector(`button[data-key="${letter}"]`)
-          .click()
-      })
+    // Get the game row matching the guessed word.
+    const gameRow = await page.waitForSelector(
+      `pierce/game-row[letters="${guess}"]`
+    )
 
-      const tiles = document
-        .querySelector("game-app")
-        .shadowRoot.querySelector("game-theme-manager")
-        .querySelectorAll("game-row")
-        [row].shadowRoot.querySelectorAll("game-tile")
+    // Waiting for the letters to be revealed. Would be nice to handle this
+    // in a declarative way, but would require piercing multiple shadow roots,
+    // which pupeteer doesn't seem to support.
+    await page.waitForTimeout(3000)
 
-      const evaluation = [...tiles].map((tileNode) => ({
-        letter: tileNode.attributes.letter.value,
-        evaluation: tileNode.attributes.evaluation.value
-      }))
+    // Grab all evaluations from the row matching the guessed word.
+    const evaluations = await gameRow.$$eval(
+      `pierce/game-tile`,
+      async (tiles) =>
+        tiles.map((tile) => ({
+          letter: tile.getAttribute("letter"),
+          type: tile.getAttribute("evaluation")
+        }))
+    )
 
-      return evaluation
+    console.log("ACTION: taking screenshot")
+    await page.screenshot({ path: __dirname + `/screenshots/${guess}.png` })
 
-      // document.querySelector("game-app").shadowRoot.querySelector("game-theme-manager").querySelector("game-keyboard").shadowRoot.querySelector("button[data-key='t']").click()
-    }, row)
-
-    await page.screenshot({ path: __dirname + "/screenshots/example.png" })
-
-    evaluations.push(evaluation)
-    row++
-
-    console.log("evaluations", evaluations)
+    allEvaluations.push(evaluations)
+    isGameOver = getIsGameOver()
   }
 
   await browser.close()
