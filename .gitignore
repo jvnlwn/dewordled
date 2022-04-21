@@ -1,1 +1,4 @@
 node_modules/
+app/screenshots/
+app/gifs/
+.DS_Store

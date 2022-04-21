@@ -2,13 +2,27 @@ const puppeteer = require("puppeteer")
 const mergeEvaluations = require("./src/mergeEvaluations")
 const testEvaluations = require("./src/testEvaluations")
 const words = require("./src/words.json")
+const fs = require("fs")
+const { setupImaging, encodeGif, getPath } = require("./src/imaging")
 
 const act = async () => {
+  setupImaging()
+
   const browser = await puppeteer.launch()
   // const context = browser.defaultBrowserContext();
   // context.overridePermissions('https://www.nytimes.com/games/wordle/index.html', ['persistent-storage']);
   // const page = await context.newPage();
   const page = await browser.newPage()
+
+  // Takes a screenshot and adds names it sequentially based on the number of
+  // existing screenshots.
+  const takeScreenshot = async () => {
+    console.log("ACTION: taking screenshot")
+    const numScreenshots = fs.readdirSync(getPath("screenshots")).length
+    await page.screenshot({
+      path: getPath("screenshots", { file: numScreenshots, extension: ".png" })
+    })
+  }
 
   // Debug
   page.on("console", (msg) => console.log(msg.text()))
@@ -53,7 +67,9 @@ const act = async () => {
       const button = await page.$(`pierce/button[data-key="${letter}"]`)
       // Seems the click event will only register if we wait between clicking each button.
       // Running the clicks in a loop within a page.evaluate does not have this issue.
+      // await takeScreenshot()
       await page.waitForTimeout(300)
+      await takeScreenshot()
       button.click()
       console.log(`ACTION: clicking letter key ${letter}`)
     }
@@ -63,10 +79,17 @@ const act = async () => {
       `pierce/game-row[letters="${guess}"]`
     )
 
+    // Capturing animation of letter evaluations being revealed.
+    const interval = setInterval(() => {
+      takeScreenshot()
+    }, 75)
+
     // Waiting for the letters to be revealed. Would be nice to handle this
     // in a declarative way, but would require piercing multiple shadow roots,
     // which pupeteer doesn't seem to support.
-    await page.waitForTimeout(3000)
+    await page.waitForTimeout(1600)
+
+    clearInterval(interval)
 
     // Grab all evaluations from the row matching the guessed word.
     const evaluations = await gameRow.$$eval(
@@ -78,14 +101,25 @@ const act = async () => {
         }))
     )
 
-    console.log("ACTION: taking screenshot")
-    await page.screenshot({ path: __dirname + `/screenshots/${guess}.png` })
+    // Take a screenshot of the word.
+    // await takeScreenshot()
 
     allEvaluations.push(evaluations)
     isGameOver = getIsGameOver()
   }
 
+  // Capturing animation of letter evaluations being revealed.
+  const interval = setInterval(() => {
+    takeScreenshot()
+  }, 75)
+
+  // Awaiting final animation completion, assuming victory...
+  await page.waitForTimeout(1600)
+
+  clearInterval(interval)
+
   await browser.close()
+  await encodeGif()
 }
 
 act()

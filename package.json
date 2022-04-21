@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
+    "gifencoder": "^2.0.1",
     "jest": "^27.5.1",
+    "png-file-stream": "^1.2.1",
     "puppeteer": "^13.5.2"
   },
   "scripts": {
