@@ -14,14 +14,18 @@ const act = async () => {
   // const page = await context.newPage();
   const page = await browser.newPage()
 
+  // We can await all the screenshots before encoding the gif.
+  const screenshotPromises = []
   // Takes a screenshot and adds names it sequentially based on the number of
   // existing screenshots.
   const takeScreenshot = async () => {
     console.log("ACTION: taking screenshot")
     const numScreenshots = fs.readdirSync(getPath("screenshots")).length
-    await page.screenshot({
+    const promise = page.screenshot({
       path: getPath("screenshots", { file: numScreenshots, extension: ".png" })
     })
+    screenshotPromises.push(promise)
+    return promise
   }
 
   // Debug
@@ -118,8 +122,9 @@ const act = async () => {
 
   clearInterval(interval)
 
-  await browser.close()
+  await Promise.all(screenshotPromises)
   await encodeGif()
+  await browser.close()
 }
 
 act()
