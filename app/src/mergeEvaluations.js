@@ -6,13 +6,13 @@ const { createEvaluationTotals } = require("./utils")
 const evaluationTypes = ["absent", "present", "correct"]
 
 // Returns true if the evaluations contains the evaluation.
-const getEvaluationExists = (evaluations, evaluation) => {
+const getEvaluationExists = (evaluations, eLetter, eType) => {
   return Boolean(
     evaluations.find(
-      (_evaluation) =>
-        _evaluation.type === evaluation.type &&
+      ([_eLetter, _eType]) =>
+        _eType === eType &&
         // Can simply check if any evaluation exists for the given evaluation.
-        (_evaluation.letter === evaluation.letter || !evaluation.letter)
+        (_eLetter === eLetter || !eLetter)
     )
   )
 }
@@ -34,7 +34,7 @@ const mergeEvaluations = (guesses) => {
 
     const addEvaluation = (evaluation, index) => {
       // Avoid exact duplicates in same column.
-      if (!getEvaluationExists(mergedEvaluations[index], evaluation)) {
+      if (!getEvaluationExists(mergedEvaluations[index], ...evaluation)) {
         // Inserting current evaluation.
         mergedEvaluations[index] = mergedEvaluations[index]
           ? [...mergedEvaluations[index], evaluation]
@@ -42,11 +42,7 @@ const mergeEvaluations = (guesses) => {
       }
 
       // Increment total for evaluation.
-      currentEvaluationTotals(
-        evaluation.letter,
-        evaluation.type,
-        (total) => total + 1
-      )
+      currentEvaluationTotals(...evaluation, (total) => total + 1)
     }
 
     // For each evaluation in the word evaluation...
@@ -54,11 +50,8 @@ const mergeEvaluations = (guesses) => {
       addEvaluation(evaluation, i)
 
       // Auto-adding an "absent" evaluation for any "present" evaluation.
-      if (evaluation.type === "present") {
-        const absentLe = {
-          letter: evaluation.letter,
-          type: "absent"
-        }
+      if (evaluation[1] === "present") {
+        const absentLe = [evaluation[0], "absent-deduced"]
 
         addEvaluation(absentLe, i)
       }
@@ -72,12 +65,12 @@ const mergeEvaluations = (guesses) => {
 
     // For each letter being assessed, get the maximum total for the letter/evaluation.
     letters.forEach((letter) => {
-      evaluationTypes.forEach((evaluationType) => {
+      evaluationTypes.forEach((eType) => {
         let maxTotal = 0
 
         // Deriving the "present" maxTotal is unique in that the process requires
         // factoring in the max "correct" evaluations for the word.
-        if (evaluationType === "present") {
+        if (eType === "present") {
           // Get total of "present" and "correct" evaluations
           // for the current totals.
           const currentPossible =
@@ -109,13 +102,13 @@ const mergeEvaluations = (guesses) => {
         } else {
           // Get maxTotal.
           maxTotal = Math.max(
-            currentEvaluationTotals(letter, evaluationType),
-            maxEvaluationTotals(letter, evaluationType)
+            currentEvaluationTotals(letter, eType),
+            maxEvaluationTotals(letter, eType)
           )
         }
 
         // Update with maxTotal.
-        maxEvaluationTotals(letter, evaluationType, maxTotal)
+        maxEvaluationTotals(letter, eType, maxTotal)
       })
     })
   })
@@ -133,14 +126,12 @@ const mergeEvaluations = (guesses) => {
       // filter out remaining "present" evaluations for current letter.
       if (maxPresent === 0) {
         evaluations = evaluations.filter(
-          (evaluation) =>
-            evaluation.letter !== letter || evaluation.type !== "present"
+          ([eLetter, eType]) => eLetter !== letter || eType !== "present"
         )
       } else if (
         // Max "present" evaluations has not yet been reached. Safe to include all.
         evaluations.find(
-          (evaluation) =>
-            evaluation.letter === letter && evaluation.type === "present"
+          ([eLetter, eType]) => eLetter === letter && eType === "present"
         )
       ) {
         // Decrement maxPresent, using up one of the available "present" evaluations.
@@ -155,24 +146,22 @@ const mergeEvaluations = (guesses) => {
         maxEvaluationTotals(letter, "absent") &&
         !maxEvaluationTotals(letter, "present")
       ) {
-        const evaluation = { letter, type: "absent" }
+        const evaluation = [letter, "absent"]
         // If the "absent" evaluation already exists for this letter, ignore it.
-        if (!getEvaluationExists(evaluations, evaluation)) {
+        if (!getEvaluationExists(evaluations, ...evaluation)) {
           // Otherwise, push it in with the other evaluations.
-          evaluations = evaluations.concat(evaluation)
+          evaluations.push(evaluation)
         }
       }
 
       // Remove all "absent" evaluations from a column in which there exists a
       // "correct" evaluation. These essentially are canceled out.
       evaluations = evaluations.filter(
-        (evaluation) =>
+        ([eLetter, eType]) =>
           // Keep the evalution if it is not "absent" or the column doesn
           // not contain a "correct" evalution.
-          evaluation.type !== "absent" ||
-          !getEvaluationExists(evaluations, {
-            type: "correct"
-          })
+          (eType !== "absent" && eType !== "absent-deduced") ||
+          !getEvaluationExists(evaluations, null, "correct")
       )
 
       return evaluations

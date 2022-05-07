@@ -14,14 +14,14 @@ const deriveAbsolutePattern = (mergedEvaluations) => {
     let pattern = ""
 
     // If there are no "correct" evaluations, we can safely negate the pattern.
-    if (!evaluations.find((evaluation) => evaluation.type === "correct")) {
+    if (!evaluations.find((evaluation) => evaluation[1] === "correct")) {
       pattern = "^"
     }
 
     // Get letters for all non-"present" evaluations as "present" evaluations will be handled separately.
     pattern += evaluations
-      .filter((evaluation) => evaluation.type !== "present")
-      .map((evaluation) => evaluation.letter)
+      .filter((evaluation) => evaluation[1] !== "present")
+      .map((evaluation) => evaluation[0])
       .join("")
 
     return `${acc}[${pattern}]`
@@ -37,11 +37,11 @@ const deriveMiniumumPatterns = (mergedEvaluations) => {
 
   // Get evaluation totals.
   mergedEvaluations.forEach((evaluations) =>
-    evaluations.forEach((evaluation) =>
-      evaluationTotals(evaluation.letter, evaluation.type, 1)
-    )
+    evaluations.forEach((evaluation) => evaluationTotals(...evaluation, 1))
   )
 
+  // TODO: Cap the "present" if an "absent" letter evaluation is found
+  // for the same letter.
   const res = Object.entries(evaluationTotals._totals).reduce(
     (acc, [letter, totals]) => {
       // If the letteer is required to be present at all...
@@ -52,9 +52,17 @@ const deriveMiniumumPatterns = (mergedEvaluations) => {
           evaluationTotals(letter, "present") +
           evaluationTotals(letter, "correct")
 
+        // Cap the possible number of occurrences of the current letter
+        // if at least 1 absent evaluation also exists for this letter.
+        const maxPossible =
+          evaluationTotals(letter, "absent") > 0 ? minPossible : ""
+
         // A repeating pattern that ensures the letter appears in any position
         // and at least minPossible times.
-        const re = new RegExp(`([${letter}].*?){${minPossible},}`, "i")
+        const re = new RegExp(
+          `([${letter}].*?){${minPossible},${maxPossible}}`,
+          "i"
+        )
         acc.push(re)
       }
 

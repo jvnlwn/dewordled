@@ -45,7 +45,7 @@ const act = async () => {
     const hasWon =
       !!allEvaluations.length &&
       allEvaluations[allEvaluations.length - 1].every(
-        (evaluation) => evaluation.type === "correct"
+        (evaluation) => evaluation[1] === "correct"
       )
     return hasLost || hasWon
   }
@@ -95,10 +95,10 @@ const act = async () => {
     const evaluations = await gameRow.$$eval(
       `pierce/game-tile`,
       async (tiles) =>
-        tiles.map((tile) => ({
-          letter: tile.getAttribute("letter"),
-          type: tile.getAttribute("evaluation")
-        }))
+        tiles.map((tile) => [
+          tile.getAttribute("letter"),
+          tile.getAttribute("evaluation")
+        ])
     )
 
     // Take a screenshot of the word.

@@ -36,7 +36,6 @@ const setupImaging = () => {
     fs.rmdirSync(getPath("screenshots"), { recursive: true, force: true })
     fs.unlinkSync(getPath("gifs", { extension: ".gif" }))
   } catch (error) {
-    console.log(error)
     // noop
   }
   fs.mkdirSync(getPath("screenshots"))
