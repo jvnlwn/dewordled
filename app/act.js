@@ -1,9 +1,10 @@
 const puppeteer = require("puppeteer")
 const mergeEvaluations = require("./src/mergeEvaluations")
 const testEvaluations = require("./src/testEvaluations")
-const words = require("./src/words.json")
+const words = require("./words/allowed.json")
 const fs = require("fs")
 const { setupImaging, encodeGif, getPath } = require("./src/imaging")
+const { sortWords } = require("./src/utils")
 
 const act = async () => {
   setupImaging()
@@ -61,8 +62,10 @@ const act = async () => {
       mergeEvaluations(allEvaluations),
       words
     )
-    const guessIndex = Math.floor(Math.random() * possibleWords.length)
-    const guess = possibleWords[guessIndex]
+    const sortetdWords = sortWords(possibleWords)
+    // const guessIndex = Math.floor(Math.random() * possibleWords.length)
+    const guessIndex = 0
+    const guess = sortetdWords[guessIndex]
     // NOTE: "↵" is the enter key used to submit the guess.
     const letters = [...guess, "↵"]
 

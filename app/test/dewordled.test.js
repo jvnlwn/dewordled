@@ -1,6 +1,6 @@
 const mergeEvaluations = require("../src/mergeEvaluations")
 const testEvaluations = require("../src/testEvaluations")
-const words = require("../src/words.json")
+const words = require("../words/allowed.json")
 
 const wordles = {
   forgo: [
